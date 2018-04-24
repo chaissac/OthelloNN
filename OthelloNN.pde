@@ -1,9 +1,10 @@
-int[][] board;
+int[] board;
 int[][] isLegal ;
 int avail, tour, scoreN, scoreB, ia ;
 boolean over, pass, hint ;
 PFont fontBig, fontSmall;
-final int SIZE = 8;
+
+Wthor wthor;
 
 void setup() {
   size(500, 560);
@@ -12,6 +13,7 @@ void setup() {
   fontSmall = loadFont("Calibri-14.vlw");
   textAlign(CENTER, CENTER);
   hint = true;
+  wthor = new Wthor("wthor/WTH_2018.wtb");
   newGame();
 }
 
@@ -73,33 +75,33 @@ void keyReleased() {
   }
 }
 void newGame() {
-  board = new int[SIZE][SIZE];
-  for (int i=0; i<4; i++) board[floor(SIZE/2)+floor(i/2)-1][floor(SIZE/2)+i%2-1]=1+(i/2+i%2)%2;
-  tour = 1;
+  board = new int[64];
+  for (int i=0; i<4; i++) board[27+floor(i/2)+8*(i%2)]=1+(i/2+i%2)%2;
+  tour = 2; // Noir commence toujours !!!
   over = pass = false;
   loop();
 }
 int play(int x, int y, int c, boolean p) {
-  int cpt = 0 ;
-  for (int i=-1; i<2; i++) 
-    for (int j=-1; j<2; j++) 
-      if (i!=0 || j!=0) 
-        if ((x+i)>=0 && (x+i)<8 && (y+j)>=0 && (y+j)<8) 
-          if (board[x+i][y+j]==3-c) 
-            for (int k=2; k<8; k++) 
-              if ((x+i*k)>=0 && (x+i*k)<8 && (y+j*k)>=0 && (y+j*k)<8) {
-                if (board[x+i*k][y+j*k]<=0) break;
-                if (board[x+i*k][y+j*k]==c) {
-                  if (p) {
-                    for (int l=k-1; l>0; l--) board[x+i*l][y+j*l]=c;
-                    cpt+=k-1;
-                  } else cpt++;
-                  break;
-                }
-              } else break ;
-  if (p) board[x][y]=c;
-  return cpt;
-}
+    int cpt = 0 ;
+    for (int i=-1; i<2; i++) 
+      for (int j=-1; j<2; j++) 
+        if (i!=0 || j!=0) 
+          if ((x+i)>=0 && (x+i)<8 && (y+j)>=0 && (y+j)<8) 
+            if (board[x+i+8*(y+j)]==3-c) 
+              for (int k=2; k<8; k++) 
+                if ((x+i*k)>=0 && (x+i*k)<8 && (y+j*k)>=0 && (y+j*k)<8) {
+                  if (board[x+i*k+8*(y+j*k)]<=0) break;
+                  if (board[x+i*k+8*(y+j*k)]==c) {
+                    if (p) {
+                      for (int l=k-1; l>0; l--) board[x+i*l+8*(y+j*l)]=c;
+                      cpt+=k-1;
+                    } else cpt++;
+                    break;
+                  }
+                } else break ;
+    if (p) board[x+8*y]=c;
+    return cpt;
+  }
 void iaPlay() {
   final float coefPOS = 2 ;
   final float coefGAIN = 1 ;
@@ -159,11 +161,12 @@ int drawBoard() {
     isLegal = new int[64][2];
     background(145, 127, 127);
     stroke(1);
+    textFont(fontSmall);
     for (int i=0; i<8; i++) {
       for (int j=0; j<8; j++) {
         fill(0, 90, 20);
         rect(i*60+10, j*60+50, 60, 60);
-        switch(board[i][j]) {
+        switch(board[i+8*j]) {
         case 1 : 
           fill(255); 
           ellipse(i*60+40, j*60+80, 50, 50); 
@@ -178,7 +181,10 @@ int drawBoard() {
           int sc = play(i, j, tour, false);
           if (sc>0) {
             fill(255-245*(tour-1));
-            if (hint) ellipse(i*60+40, j*60+80, 10, 10);
+            if (hint) {
+              //ellipse(i*60+40, j*60+80, 10, 10);
+              text((i+1)*10+j+1, i*60+40, j*60+80);
+            }
             isLegal[avail][0] = i+j*8;
             isLegal[++avail][1] = sc;
             //avail++;
